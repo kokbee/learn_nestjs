@@ -10,7 +10,7 @@ app.get('/', ( req: express.Request, res: express.Response) => {
 
 app.get('/cat', ( req: express.Request, res: express.Response) => {
   console.log(req)
-  res.send('Hello World!')
+  res.send('author check')
 })
 
 app.listen(port, () => {
