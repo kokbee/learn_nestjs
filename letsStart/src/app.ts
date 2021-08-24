@@ -1,51 +1,49 @@
-import * as express from 'express'
-import {
-  Cat,
-  CatType,
-} from './app.module'
+import * as express from 'express';
+import catsRouter from './cats/cats.route';
 
-const app = express.default()
-const port: number = 5000
+class Server {
+  public app: express.Application;
 
-app.get('/', ( req: express.Request, res: express.Response) => {
-  console.log(req.header)
-  res.send('Hello World!')
-})
-
-app.route('/cats/:name').get(( req: express.Request, res: express.Response) => {
-  const { name } = req.params
-  const cats = Cat.find( cat => cat.name === name )
-  try {
-    res.status(200).send({
-      success: true,
-      data: {
-        cats
-      },
-    })
-  } catch (err) {
-    res.status(400).send({
-      success: false,
-      error: err.message
-    })
+  constructor() {
+    const app: express.Application = express();
+    this.app = app;
   }
-}).post(( req: express.Request, res: express.Response) => {
-  const { name } = req.params
 
-  const cats = Cat
-  try {
-    res.status(200).send({
-      success: true,
-      data: {...cats, 5: { name } }
-    })
-  } catch (err) {
-    res.status(400).send({
-      success: false,
-      error: err.message
-    })
+  private setRoute() {
+    this.app.use(catsRouter);
   }
-})
 
+  private setMiddleware() {
+    //* logging middleware
+    this.app.use((req, res, next) => {
+      console.log(req.rawHeaders[1]);
+      console.log('this is logging middleware');
+      next();
+    });
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
-})
+    //* json middleware
+    this.app.use(express.json());
+
+    this.setRoute();
+
+    //* 404 middleware
+    this.app.use((req, res, next) => {
+      console.log('this is error middleware');
+      res.send({ error: '404 not found error' });
+    });
+  }
+
+  public listen() {
+    this.setMiddleware();
+    this.app.listen(8000, () => {
+      console.log('server is on...');
+    });
+  }
+}
+
+function init() {
+  const server = new Server();
+  server.listen();
+}
+
+init();
